@@ -1,10 +1,10 @@
-name: Android Kernel Driver Builder
+name: Build Driver for MSO9385
 
 on:
   workflow_dispatch:
     inputs:
       driver_name:
-        description: 'Driver Module Name (e.g., 8821cu.ko)'
+        description: 'Driver Name (e.g., 8821cu.ko)'
         required: true
         default: '8821cu.ko'
 
@@ -19,20 +19,16 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential gcc-aarch64-linux-gnu git wget
-      
-      - name: Download MSO9385 kernel
+          sudo apt-get install -y build-essential gcc-aarch64-linux-gnu wget
+        
+      - name: Download prebuilt kernel headers
         run: |
-          wget -q https://github.com/LineageOS/android_kernel_mstar_mso9385/archive/refs/heads/lineage-16.0.tar.gz
-          tar xzf lineage-16.0.tar.gz
-          mv android_kernel_mstar_mso9385-lineage-16.0 kernel
+          # 使用预编译的MSO9385内核头文件
+          wget -q https://github.com/friendlyarm/kernel-headers/raw/master/mso9385-4.9.169-headers.tar.gz
+          tar xzf mso9385-4.9.169-headers.tar.gz
+          mv kernel-headers kernel
       
-      - name: Configure kernel
-        run: |
-          cd kernel
-          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- mstar_stb_defconfig
-      
-      - name: Build module
+      - name: Build kernel module
         run: |
           cp -r code kerneldriver
           make -C kernel M=$PWD/kerneldriver ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules
